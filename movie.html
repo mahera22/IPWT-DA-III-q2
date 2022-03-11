@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Rater</title>
+</head>
+<style>
+    *{
+        padding:0;
+        margin:0;
+        outline:0;
+        box-sizing: border-box;
+        font-size: 20px;
+    }
+    .container{
+        margin-top:3rem;
+    }
+    h3{
+        text-align:center;
+    }
+    .row{
+        display:flex;
+        justify-content: center;
+    }
+    .row div{
+        margin:20px;
+    }
+    .row div input{
+        width:500px;
+        height:40px;
+        padding: 20px;
+    }
+    .submit button{
+        cursor: pointer;
+        color:white;
+        background-color: #1C1F23;
+        padding:10px;
+        border-radius: 6px;
+    }
+    .submit{
+        width: 150px;
+    }
+    table thead tr th{
+        border: 1px solid #1C1F23;
+        padding:5px;
+    }
+    table tbody tr td{
+        border: 1px solid #1C1F23;
+        padding:5px;
+        text-align:center;
+    }
+    table{
+        border: 3px solid #1C1F23;
+        margin: auto;
+        width:90vw;
+    }
+    button{
+        background-color:rgb(209, 70, 70);
+        border-radius: 6px;
+        padding:10px;
+        border:none;
+        cursor:pointer;
+    }
+</style>
+<body onload="load()">
+    <div class="container">
+        <br>
+        <h3>My Favourite Movies</h3>
+        <br>
+        <form action="backend.php">
+            <div class="row">
+                <div class="col">
+                    <input type="text" placeholder="Enter Movie Name" name="name" id="name" required>
+                </div>
+                <div class="col rating">
+                    <input type="number" placeholder="Enter Rating" name="rating" id="rate" max="10" min="1" required>
+                </div>
+                <div class="col submit">
+                    <button type="button" class="btn" onclick="submitMovie();" style="width: 100%">Submit</button>
+                </div>
+            </div>
+        </form>
+        <br>
+        <table class="table" id="tbl">
+            <thead>
+                <tr>
+                    <th onclick="sortTable();"> 
+                        Movie Name
+                    </th>
+                    <th onclick="sortTableNum()">
+                        Movie Rating
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+        </table>
+    </div>
+</body>
+<!-- Jquery cdn -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<script>
+    var count = 0;
+        var x = 0;
+        // When there is no movie entered display nothing
+        function load(){
+            if(count==0){
+                $("#tbl").hide();
+            }
+            else{
+                $("#tbl").css("display", "table");
+            }
+        }
+        
+        //Add row to the table on submit
+        function submitMovie(){
+            var name = $("#name").val();
+            var rate = $("#rate").val();
+            if(name.trim()=='' || rate.trim()==''){
+                alert("Please fill both fields");
+                return;
+            }
+            if(Number(rate)>10 || Number(rate)<1){
+                alert("Rating should be in the range 1 - 10");
+                return;
+            }
+            count += 1;
+            x += 1;
+            
+            var tr = document.createElement("TR");
+            tr.setAttribute("id", x);
+            
+            var cell = document.createElement("TD");
+            var t = document.createTextNode(name);
+            cell.appendChild(t);
+            tr.appendChild(cell);
+            
+            var cell = document.createElement("TD");
+            var t = document.createTextNode(rate);;
+            cell.appendChild(t);
+            tr.appendChild(cell);
+            
+            var cell = document.createElement("TD");
+            var btn = document.createElement("BUTTON");
+            btn.innerHTML = "Delete";
+            btn.classList.add('btn');
+            btn.classList.add('btn-danger');
+            btn.id = x+"_del";
+            btn.addEventListener("click", del);
+            cell.appendChild(btn);
+            tr.appendChild(cell);
+            
+            
+            $("#tbody").append(tr);
+            
+            load();
+  
+        }
+        
+        //Deletion of a row
+        function del(){
+            var id = event.srcElement.id;
+            id = id.split("_")[0];
+            $(`#${id}`).remove();
+            count-=1;
+            load();
+        }
+        
+        //Alphabetical sort function for movie name column
+        function sortTable() {
+            var n =0;
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("tbl");
+            switching = true;
+            dir = "asc"; 
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+                for (i = 1; i < (rows.length - 1); i++) {
+                  shouldSwitch = false;
+                  x = rows[i].getElementsByTagName("TD")[n];
+                  y = rows[i + 1].getElementsByTagName("TD")[n];
+                  if (dir == "asc") {
+                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                      shouldSwitch= true;
+                      break;
+                    }
+                  } else if (dir == "desc") {
+                    if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                      shouldSwitch = true;
+                      break;
+                    }
+                  }
+                }
+                if (shouldSwitch) {
+                  rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                  switching = true;
+                  switchcount ++;      
+                } else {
+                  if (switchcount == 0 && dir == "asc") {
+                    dir = "desc";
+                    switching = true;
+                  }
+                }
+            }
+        }
+        
+        //Numeric sort function for movie rating column
+        function sortTableNum() {
+            var n =1;
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("#tbl");
+            switching = true;
+            dir = "asc"; 
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+                for (i = 1; i < (rows.length - 1); i++) {
+                  shouldSwitch = false;
+                  x = rows[i].getElementsByTagName("TD")[n];
+                  y = rows[i + 1].getElementsByTagName("TD")[n];
+                  if (dir == "asc") {
+                    if (Number(x.innerHTML.toLowerCase()) > Number(y.innerHTML.toLowerCase())){
+                      shouldSwitch= true;
+                      break;
+                    }
+                  } else if (dir == "desc") {
+                    if (Number(x.innerHTML.toLowerCase()) < Number(y.innerHTML.toLowerCase())) {
+                      shouldSwitch = true;
+                      break;
+                    }
+                  }
+                }
+                if (shouldSwitch) {
+                  rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                  switching = true;
+                  switchcount ++;      
+                } else {
+                  if (switchcount == 0 && dir == "asc") {
+                    dir = "desc";
+                    switching = true;
+                  }
+                }
+            }
+        }
+</script>
+</html>
